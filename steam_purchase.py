@@ -5,6 +5,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
+
 URL = "https://store.steampowered.com/login/"  # <= ここにスクレイピングしたい対象URLを書いてください
 ID = ""                        # <= ここにログインIDを書いてください
 ID_sel = "#input_username"               # <= ここにログインID欄のCSSセレクタを書いてください
@@ -12,6 +13,12 @@ PASS = ""                        # <= ここにログインパスワードを書
 PASS_sel = "#input_password"               # <= ここにログインパスワード欄のCSSセレクタを書いてください
 # <= ここにスクレイピングしたい対象URLを書いてください
 Selector = "https://store.steampowered.com/account/history/"
+
+pass_file = "pass.txt"
+with open("id.txt", "r") as f:
+    ID = f.read()
+with open("pass.txt", "r") as f:
+    PASS = f.read()
 
 # 必須
 
@@ -50,9 +57,14 @@ soup = BeautifulSoup(driver.page_source, features="html.parser")
 
 table = soup.findAll("table", {"class": "wallet_history_table"})[0]
 rows = table.findAll("tr")
+price_list = list()
 for row in rows:
     for cell in row.findAll("td", {"class": "wht_total "}):
         if "クレジット" in cell.text:
             continue
-        p = cell.text.replace(",", "").replace(" ", "").replace("\\", "")
+        p = cell.text.replace(",", "").replace(" ", "").replace(
+            chr(165), "").replace("\n", "").replace("\t", "")
         print(p)
+        price_list.append(p)
+price_list = map(round, map(float, price_list))
+print(sum(price_list))
